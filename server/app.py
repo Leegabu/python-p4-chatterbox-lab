@@ -30,15 +30,15 @@ def messages():
 def messages_by_id(id):
     message = Message.query.filter_by(id=id).first()
     if message is None:
-        return jsonify({"error": " Messages is not in the database"}), 404
+        return jsonify({"error": " Messages is not found"}), 404
 
     if request.method == 'PATCH':
         data = request.get_json()
-        message.body = data.get("body", message.body)
-        message.username = data.get("username", message.username)
+        for attr in request.form:
+            setattr(message, attr, request.form.get(attr))    
         db.session.add(message)
         db.session.commit()
-        return jsonify({"id": message.id, "body": message.body, "username": message.username}), 200
+        return jsonify(message.to_dict()), 200
     
     elif request.method == 'DELETE':
         db.session.delete(message)
